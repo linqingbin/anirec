@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>动画信息库</title>
+  <link rel="stylesheet" type="text/css" href='{{url_for("static",filename="style.css")}}'}>
+  <link rel="stylesheet" type="text/css" href='{{url_for("static",filename="semantic.min.css")}}'>
+  <script type="text/javascript" src='{{url_for("static",filename="jquery-3.2.1.js")}}'></script>
+  <script type="text/javascript" src='{{url_for("static",filename="semantic.min.js")}}'></script>
+  <script type="text/javascript" src='{{url_for("static",filename="vue.js")}}'></script>
+  <style type="text/css">
+    #anime_list {
+      width: 
+    }
+    h1 a {
+      text-decoration: none;
+      color: white;
+    }
+    h1 a:hover {
+      color: white;
+    }
+  </style>
+</head>
+<body>
+<div id="app">
+
+  <div class="ui teal inverted segment">
+    <div class="ui teal inverted secondary menu">
+      <h2 class="item">
+        <a href="/">
+          动画信息库
+        </a>
+      </h2>
+      </h2>
+      <a class="item" v-bind:class="{active:isActiveTab('menu','recommend')}" v-on:click="makeActive('menu','recommend')">
+        推荐作品
+      </a>
+      <a class="item" v-on:click="modal_show('upload_history')">
+        上传观看记录
+      </a>
+      <div class="right menu">
+        <div class="item">
+          <select class="ui dropdown">
+            <option value="1" selected>主用户</option>
+            <option value="0">测试用户</option>
+          </select>
+        </div>
+        
+        <a class="item" v-show="false">
+          提交作品历史
+        </a>
+      </div>
+    </div>
+  </div>
+
+{% block container %}
+{% endblock %}
+
+</div>
+<script type="text/javascript">
+    // var animelist = JSON.parse('{{ animelist|tojson|safe }}')
+    var al = {{ animelist|tojson|safe }}
+
+    var animelist_get = function(obj,name,start_year=null,end_year=null,season=null){
+      $.ajax({
+        url:"/animelist",
+        type:"GET",
+        contentType : "application/json; charset=utf-8",
+        data: {
+          'start_year':start_year,
+          'end_year':end_year,
+          'season':season,
+        },
+        // async: false,
+        success:function(json){
+          console.info(json)
+          obj[name] = json
+        }
+      })
+    }
+    // x = {}
+    // var al = animelist_get(obj=x,name="data",year=2017)
+    var app = new Vue({
+      el: '#app',
+      delimiters:['[[',']]'],
+      data: {
+        message: 'Hello Anime!',
+        animelist:[],
+        seasons:{
+          0:{
+            value:"all",
+            name_ch:"全年"
+          },
+          1:{
+            value:"winter",
+            name_ch:"冬季番"
+          },
+          2:{
+            value:"spring",
+            name_ch:"春季番"
+          },
+          3:{
+            value:"summer",
+            name_ch:"夏季番"
+          },
+          4:{
+            value:"autumn",
+            name_ch:"秋季番"},
+        },
+        status:{
+          0:{
+            value:"not_viewed",
+            name_ch:"未看"
+          },
+          1:{
+            value:"marked",
+            name_ch:"收藏"
+          },
+          2:{
+            value:"viewed",
+            name_ch:"已看"
+
+          },
+          3:{
+            value:"dropped",
+            name_ch:"放弃"
+          },
+          4:{
+            value:"all",
+            name_ch:"任意"
+          }
+        },
+        years:[2018, 2017, 2016, 2015, 2014, 2013, 2012, 2011, 2010, 2009, 2008, 2007, 2006, 2005, 2004, 2003, 2002, 2001, 2000],
+        active:{menu:"recommend"
+        },
+        filter:{
+          start_year:2000,
+          end_year:2018,
+          season:"all",
+          status:"not_viewed",
+          keyword:"",
+          page_num:1
+        }
+      },
+      created: function(){
+        this.make_filter(1)
+        },
+      methods: {
+        
+        format_date:function(start_date_fuzzy) {
+          str_date = (start_date_fuzzy+'');
+          format_date = str_date.slice(0,4)+"-"+str_date.slice(4,6)+"-"+str_date.slice(6,8);
+          return format_date
+        },
+        isviewed_update:function(anime,value){
+          // anime.isviewed = !anime.isviewed
+          var new_value = anime.isviewed==value?0:value;
+          formdata = {
+            anime_id:anime.id,
+            isviewed:new_value}
+          anime.isviewed = new_value
+          console.info(anime.isviewed)
+          $.ajax({
+            url: "/isviewed_update",
+            data:JSON.stringify(formdata),
+            type: "POST",
+            contentType : "application/json; charset=utf-8",
+            datatype:"json",
+          }).done(function(){
+            anime.isviewed = new_value
+            }
+        )
+        },
+        makeActive: function(key,val) {
+                this.active[key] = val;
+            },
+        isActiveTab: function(key,val) {
+          return this.active[key] === val;
+        },
+        modal_show: function(modal_id) {
+          $('#'+modal_id).modal('show');
+          $(".dimmer").css("background-color","rgba(255,255,255,0.7)");
+        },
+        make_filter:function(page_num){
+          // 将自身赋予一个固定变量，以供ajax函数内调用修改
+          var self = this;
+          this.filter.page_num = page_num
+          $.ajax({
+            url:"/animelist",
+            type:"GET",
+            contentType : "application/json; charset=utf-8",
+            data: {
+              start_year:this.filter.start_year,
+              end_year:this.filter.end_year,
+              season:this.filter.season,
+              status:this.filter.status,
+              keyword:this.filter.keyword,
+              page_num:this.filter.page_num,
+            }
+          }).done(function(json){
+            console.info(json)
+            self.animelist = json
+          })
+        },
+        next_page:function(){
+          this.filter.page_num += 1
+          $("body, html, #anime_list").animate({scrollTop: 250}, 500);
+          this.make_filter(this.filter.page_num)
+
+        }
+      }
+    })
+      $('select.dropdown')
+        .dropdown()
+    ;
+    $('.div')
+      .popup()
+    ;
+</script>
+</body>
+</html>

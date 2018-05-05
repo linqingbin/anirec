@@ -1,0 +1,110 @@
+﻿{% extends 'layout.html' %}
+{% block container %}
+  <div class="ui blue inverted segment form" id="filter_form">
+    <div class="fields">
+      <div class="field">
+        <label>开始年份</label>
+        <select class="ui dropdown" v-model="filter.start_year">
+            <option v-for="year,index in years">[[year]]</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>结束年份</label>
+        <select class="ui dropdown" v-model="filter.end_year">
+            <option v-for="year,index in years">[[year]]</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>季度</label>
+        <select class="ui dropdown" v-model="filter.season">
+            <option v-for="season in seasons" v-bind:value=season.value>[[season.name_ch]]</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>状态</label>
+        <select class="ui dropdown" v-model="filter.status">
+            <option v-for="s in status" v-bind:value=s.value>[[s.name_ch]]</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>搜索关键字</label>
+        <input type="text" name="" v-model="filter.keyword" v-on:keyup.enter="make_filter(1)">
+      </div>
+    </div>
+    <button class="ui mini button" v-on:click="make_filter(1)">筛选</button>
+  </div>
+
+  <div class="ui segment" id="anime_list">
+    <div class="ui items">
+      <h3>这里是第[[filter.page_num]]页 </h3>
+      <div class="item" v-for="anime in animelist">
+        
+        <div class="image">
+          <img v-bind:src="anime.image_url_lge">
+        </div>
+        
+        <div class="content" >
+          <a class="header" v-bind:href="'https://www.google.co.jp/search?q='+anime.title_japanese+'&tbm=isch'" target="_blank">
+            [[anime.title_japanese]]([[anime.total_episodes]]話)</a>
+          <a v-bind:href="'https://nyaa.si/?f=0&c=1_4&q='+anime.title_romaji.toLowerCase()" target="_blank"><i class="external icon"></i></a>
+          <div class="meta">
+            <span class="ui small labels">
+              <div class="ui label" v-for="genre in anime.genres" v-if="genre.length > 0">
+                [[genre]]
+              </div>
+            </span>
+          </div>
+          <div class="description">
+            <p>[[anime.description]]</p>
+          </div>
+          <div class="extra">
+            <p>[[format_date(anime.start_date_fuzzy)]]</p>
+<!--             <button class="ui toggle tiny button" v-bind:class="{ active: anime.isviewed }" v-on:click="isviewed_update(anime,1)">Viewed</button> -->
+            <div class="ui grey icon buttons">
+              <button class="ui toggle button" v-bind:class="{ active: anime.isviewed == -1 }" v-on:click="isviewed_update(anime,-1)">
+                <i class="large toggle minus icon"></i>
+              </button>
+              <button class="ui toggle button" v-bind:class="{ active: anime.isviewed == 2 }" v-on:click="isviewed_update(anime,2)">
+                <i class="large empty star icon"></i>
+              </button>
+              <button class="ui toggle button" v-bind:class="{ active: anime.isviewed == 1 }" v-on:click="isviewed_update(anime,1)">
+                <i class="large checkmark icon"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <div class="ui three column grid">
+    <div class="column">
+      <div class="ui menu">
+          <a class="item" v-on:click="next_page()">下一页</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="ui modal" id="upload_history">
+      <i class="close icon"></i>
+      <div class="header">
+        上传观看记录
+      </div>
+
+      <div class="content">
+        <div class="ui form">
+          <div class="field">
+            <label>请输入动画名称</label>
+            <textarea ></textarea>
+          </div>
+        </div>
+      </div>
+      <div class="actions">
+        <div class="ui black deny button">关闭</div>
+        <div class="ui positive button">上传</div>
+      </div>
+    </div>
+
+
+{% endblock %}

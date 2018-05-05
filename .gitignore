@@ -1,0 +1,15 @@
+env
+tests
+.*.xlsx
+.*.db
+.*.json
+.*.pyc
+.*.csv
+__pycache__
+anirec/lib
+anirec/data
+anime_info_get.py
+dbmanage.py
+recommand.py
+analysis.py
+viewed_set.py
