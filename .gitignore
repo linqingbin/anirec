@@ -1,5 +1,6 @@
 env
 tests
+anzen.py
 .*.xlsx
 .*.db
 .*.json
