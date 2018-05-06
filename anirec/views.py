@@ -9,6 +9,8 @@ import pdb
 from flask import Flask, render_template, request, \
     redirect, url_for, jsonify, abort, g, session, flash
 import anzen
+import urllib
+
 
 app = Flask(__name__)
 app.config.from_object("config")  # 创建app
@@ -18,7 +20,18 @@ app.config.from_object("config")  # 创建app
 def setUp():
     g.const = {}
     # g.db = engine.SearchEngine()
-    g.db = pymongo.MongoClient(app.config["DBHOST"], 27017)
+    URI = 'mongodb://{user}:{pwd}@{host}:{port}'.format(
+        host=app.config["DBHOST"],
+        port=27017,
+        user=urllib.parse.quote_plus(anzen.BOOK["mdb"]["a"]),
+        pwd=urllib.parse.quote_plus(anzen.BOOK["mdb"]["p"])
+    )
+    print(URI)
+    g.db = pymongo.MongoClient(URI)
+    # g.db = pymongo.MongoClient(host=app.config["DBHOST"],
+    #                            port=27017,
+    #                            username=anzen.BOOK["mdb"]["a"],
+    #                            password=anzen.BOOK["mdb"]["p"])
     g.seasons = {'winter': ["01", "03"],
                  'spring': ["04", "06"],
                  'summer': ["07", "09"],
