@@ -1,3 +1,3 @@
 ﻿DBHOST = '117.48.214.212'
-DEBUG = True
+DEBUG = False
 SECRET_KEY = "3212"

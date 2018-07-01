@@ -1,6 +1,8 @@
 env
+py35
 tests
 anzen.py
+*pyc
 .*.xlsx
 .*.db
 .*.json
